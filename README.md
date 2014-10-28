@@ -1,4 +1,4 @@
 python3-nodin
 =============
 
-A Arborjs.org version based on pyglet and python3.
+A Arborjs.org version based on python3 and pyglet.
