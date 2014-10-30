@@ -10,6 +10,10 @@ class node():
 		self.UID = UID
 		self.scale = scale
 		self.meta = meta
+		if 'links' in meta:
+			self.links = meta['links']
+		else:
+			self.links = []
 
 class nodes():
 	def __init__(self, inputData, width=800, height=600):

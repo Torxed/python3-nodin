@@ -97,16 +97,15 @@ class GenericObject(pyglet.sprite.Sprite):
 
 		self.render = True
 		self.moveable = True
-		self.scaleRatio = 1.0
 
 		if dictWars['texture'] and isfile(dictWars['texture']):
 			self.texture = pyglet.image.load(dictWars['texture'])
 		else:
 			## If no texture was supplied, we will create one
 			if dictWars['width'] is None:
-				dictWars['width'] = 60
+				dictWars['width'] = 10
 			if dictWars['height'] is None:
-				dictWars['height'] = 60
+				dictWars['height'] = 10
 			self.texture = self.gen_solid_img(dictWars['width'], dictWars['height'], dictWars['color'], alpha=255)
 
 		## We must instanciate pyglet.sprite.Sprite before
@@ -115,7 +114,7 @@ class GenericObject(pyglet.sprite.Sprite):
 		## (Python2 would work fine as long as supplied as an inheritance)
 		super(GenericObject, self).__init__(self.texture)
 		
-		self.scale = dictWars['height']
+		self.scale = dictWars['scale']
 		if dictWars['width'] and dictWars['width'] < self.texture.width:
 			self.scale = (1.0/max(dictWars['width'], self.texture.width))*min(dictWars['width'], self.texture.width)
 		elif dictWars['height'] and dictWars['height'] < self.texture.height:
@@ -188,15 +187,15 @@ class GenericObject(pyglet.sprite.Sprite):
 		
 		glPopMatrix()
 
-	def draw_line(self, to, color=(0.2, 0.2, 0.2, 1)):
-		if type(to) == GenericObject:
-			xy, dxy = (self.x+self.width/2, self.y+self.height/2), (to.x+to.width/2, to.y+to.height/2)
+	def draw_line(self, to, c='#FF0000'):
+		if type(to) == Node:
+			xy, dxy = (self.x, self.y), (to.x, to.y)
 		elif type(to) == tuple:
 			xy, dxy = to
 		else:
 			return None
 
-		glColor4f(color[0], color[1], color[2], color[3])
+		glColor4f(*self.color_converter(c))#color[0], color[1], color[2], color[3])
 		glBegin(GL_LINES)
 		glVertex2f(xy[0], xy[1])
 		glVertex2f(dxy[0], dxy[1])
@@ -309,8 +308,14 @@ class GenericObject(pyglet.sprite.Sprite):
 		as a "redirection" (useful for buttons inside
 			windows etc)
 		"""
-		if self.x < x < self.x+self.width:
-			if self.y < y < self.y+self.height: return self
+		if self.anchor == 'center':
+			if (self.x-(self.width/2)) < x < (self.x+(self.width/2)):
+				if (self.y-(self.height/2)) < y < (self.y+(self.height/2)):
+					return self
+		else:
+			if self.x < x < self.x+self.width:
+				if self.y < y < self.y+self.height:
+					return self
 
 	def click(self, x, y, merge=None):
 		"""
@@ -358,6 +363,10 @@ class GenericObject(pyglet.sprite.Sprite):
 		"""
 		return True
 
+	def drag(self, x, y):
+		self.x += x
+		self.y += y
+
 	def gettext(self):
 		return ''
 
@@ -369,6 +378,9 @@ class GenericObject(pyglet.sprite.Sprite):
 	def move(self, x, y):
 		self.x += x
 		self.y += y
+		self.moveable = False
+		#self.update_children()
+		self.moveable = True
 
 	def _draw(self):
 		"""
@@ -379,42 +391,23 @@ class GenericObject(pyglet.sprite.Sprite):
 		"""
 		self.draw()
 
-def __init__(*args, **dictWars):
-		"""
-		Grass tiles fetched from: http://opengameart.org/forumtopic/2d-art-grass-tile-request
-		"""
-		## If we are inherited from another class,
-		## the arguments will be passed only into *args and we
-		## need to unpack them outselves if 4 conditions are met
-		## that can only happen if we are inherited.
-		if type(args) == tuple and len(args) == 2 and len(dictWars) == 0 and type(args[1]) == dict:
-			args, dictWars = args
-		self = args[0]
-
-		# This is just to hide the BasicObject().
-		# We need it tho for other functions such as batched rendering
-		# (It's sort of a bug, try removing texture='...' from the Grass() call and you'll see)
-		dictWars['x'], dictWars['y'] = -100, -100
-		BasicObject.__init__(args, dictWars)
-
-class Circle(GenericObject):
-	#def __init__(self, texture=None, width=None, height=None, color="#C2C2C2", x=0, y=0, anchor=None, scale=1.0):
+class Node(GenericObject):
 	def __init__(*args, **dictWars):
 		if type(args) == tuple and len(args) == 2 and len(dictWars) == 0 and type(args[1]) == dict:
 			args, dictWars = args
 		self = args[0]
-		# Old method:
-		#    super(Circle, self).__init__(args, dictWars)
-		# "New" generic way of passing arguments and instanciate the class:
 		GenericObject.__init__(args, dictWars)
 
 	def _draw(self):
+		for link in self.dictWars['links']:
+			if link in self.dictWars['sprites']:
+				self.draw_line(self.dictWars['sprites'][link], c='#00000')
 		self.draw_circle(self.x, self.y, 5, c=self.colorcode, AA=60, rotation=0, stroke=False)
 
 class main(pyglet.window.Window):
 	def __init__ (self,):
 		super(main, self).__init__(800, 600, fullscreen = False, caption='Shatter')
-		self.bg = GenericObject(width=800, height=600, color=(228,228,228,255))
+		self.bg = GenericObject(width=800, height=600, color=(228,228,228,255), anchor='botleft')
 
 		self.sprites = OD()
 		#self.lines = OD()
@@ -465,23 +458,13 @@ class main(pyglet.window.Window):
 		if button == 1:
 			if self.active[1] and not self.drag and self.multiselect == False:
 				self.active[1].click(x, y, self.mergeMap)
-				if self.active[0] == 'menu':
-					del(self.sprites['menu'])
-			self.drag = False
-			if 'link' in self.lines:
-				##   link_objects( lines == ((x, y), (x, y)) )
-				self.link_objects(self.lines['link'][0], self.lines['link'][1])
 		elif button == 4:
 			if not self.active[0]:
 				pass #Do something on empty spaces?
 			else:
 				self.active[1].right_click(x, y, self.mergeMap)
-			#self.sprites['temp_vm'] = virtualMachine(pos=(x-48, y-48))
-			#self.requested_input = self.sprites['temp_vm'].draws['1-title']
-			#self.sprites['input'] = Input("Enter the name of your virtual machine", pos=(int(self.width/2-128), int(self.height/2-60)), height=120)
 
-		#if type(self.active[1]) != Input:
-		#	self.active = None, None
+		self.drag = False
 	
 	def on_mouse_press(self, x, y, button, modifiers):
 		if button == 1 or button == 4:
@@ -497,8 +480,8 @@ class main(pyglet.window.Window):
 
 	def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
 		self.drag = True
-		if self.active[1] and self.multiselect == False and hasattr(self.active[1], 'link'):
-			self.lines['link'] = ((self.active[1].x+(self.active[1].width/2), self.active[1].y+(self.active[1].height/2)), (x,y))
+		if self.active[1] and self.multiselect == False:
+			self.active[1].drag(dx, dy)
 		elif self.multiselect:
 			for obj in self.multiselect:
 				self.sprites[obj].move(dx, dy)
@@ -549,12 +532,12 @@ class main(pyglet.window.Window):
 		glEnd()
 
 	def plot_nodes(self, nodemap):
-		for key, meta in nodemap.items():
-			print('Plotting:',key,'(x={0}, y={1})'.format(meta.x, meta.y))
+		for key, node in nodemap.items():
+			print('Plotting:',key,'(x={0}, y={1})'.format(node.x, node.y))
 			color = (0,0,0,255)
-			if 'color' in meta.meta:
-				color = meta.meta['color']
-			self.mergeMap[key] = Circle(x=meta.x, y=meta.y, width=10, height=10, color=color)
+			if 'color' in node.meta:
+				color = node.meta['color']
+			self.mergeMap[key] = Node(x=node.x, y=node.y, width=10, height=10, color=color, links=node.links, sprites=self.sprites)
 
 	def render(self):
 		self.clear()
