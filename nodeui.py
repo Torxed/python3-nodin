@@ -427,7 +427,7 @@ class Node(GenericObject):
 					dx = self.dictWars['sprites'][link].drag_pos[0]
 					dy = self.dictWars['sprites'][link].drag_pos[1]
 
-					if (-1 < dx-x > 1) or (-1 < dy-y > 1):
+					if (-1 > dx-x) or (dx-x > 1) or (-1 > dy-y) or (dy-y > 1):
 						if x > dx:
 							mx = -1
 						elif x < dx:
