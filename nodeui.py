@@ -81,6 +81,7 @@ class GenericObject(pyglet.sprite.Sprite):
 		self.y = y
 
 		self.triggers = {'hover' : False}
+		self.colorcode = color
 
 	def swap_image(self, image, filePath=True, width=None):
 		try:
@@ -97,7 +98,7 @@ class GenericObject(pyglet.sprite.Sprite):
 		elif height and height < self.texture.height:
 			self.scale = (1.0/max(height, self.texture.height))*min(height, self.texture.height)
 
-	def gen_solid_img(self, width, height, c, alpha=255):
+	def color_converter(self, c, alpha=255):
 		if '#' in c:
 			c = c.lstrip("#")
 			c = max(6-len(c),0)*"0" + c
@@ -105,7 +106,32 @@ class GenericObject(pyglet.sprite.Sprite):
 			g = int(c[2:4], 16)
 			b = int(c[4:], 16)
 			c = (r,g,b,alpha)#int(0.2*255))
-		return pyglet.image.SolidColorImagePattern(c).create_image(width,height)
+		return c
+
+	def gen_solid_img(self, width, height, c, alpha=255):
+		return pyglet.image.SolidColorImagePattern(self.color_converter(c, alpha)).create_image(width,height)
+
+	def draw_circle(self, x, y, radius, c='#FF0000', AA=60, rotation=0, stroke=False):
+		glColor4f(*self.color_converter(c))
+		glPushMatrix()
+
+		glTranslatef(x, y, -0) # 0=z
+		glRotatef(rotation, 0, 0, 0.1)
+
+		if radius < 1 : radius = 1
+
+		if stroke:
+			inner = radius - stroke # outline width
+			if inner < 0: inner=0
+		else :
+			 inner = 0 # filled
+
+		q = gluNewQuadric()
+		
+		gluQuadricDrawStyle(q, GLU_FILL) #glu style
+		gluDisk(q, inner, radius, AA, 1) # gluDisk(quad, inner, outer, slices, loops)
+		
+		glPopMatrix()
 
 	def draw_line(self, to, color=(0.2, 0.2, 0.2, 1)):
 		if type(to) == GenericObject:
@@ -120,6 +146,7 @@ class GenericObject(pyglet.sprite.Sprite):
 		glVertex2f(xy[0], xy[1])
 		glVertex2f(dxy[0], dxy[1])
 		glEnd()
+
 
 	def draw_border(self, color=(0.2, 0.2, 0.2, 0.5)):
 		""" Current limitations are that this only draws a border around the object itself. """
@@ -297,7 +324,13 @@ class GenericObject(pyglet.sprite.Sprite):
 		"""
 		self.draw()
 
+class Circle(GenericObject):
+	def __init__(self, texture=None, width=None, height=None, color="#C2C2C2", x=0, y=0, anchor=None, scale=1.0):
+		super(Circle, self).__init__(texture=texture, width=width, height=height, color=color, x=x, y=y, anchor=anchor, scale=scale)
 
+	def _draw(self):
+		print('Drawing cirle: {0}, {1} with color {2}'.format(self.x, self.y, self.colorcode))
+		self.draw_circle(self.x, self.y, 5, c=self.colorcode, AA=60, rotation=0, stroke=False)
 
 class main(pyglet.window.Window):
 	def __init__ (self,):
@@ -435,6 +468,14 @@ class main(pyglet.window.Window):
 		glVertex2f(xy[0], xy[1])
 		glVertex2f(dxy[0], dxy[1])
 		glEnd()
+
+	def plot_nodes(self, nodemap):
+		for key, meta in nodemap.items():
+			print('Plotting:',key,'(x={0}, y={1})'.format(meta.x, meta.y))
+			color = (0,0,0,255)
+			if 'color' in meta.meta:
+				color = meta.meta['color']
+			self.mergeMap[key] = Circle(x=meta.x, y=meta.y, width=10, height=10, color=color)
 
 	def render(self):
 		self.clear()

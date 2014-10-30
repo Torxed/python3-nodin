@@ -3,7 +3,9 @@ from nodeui import nodesui
 from node import nodes
 
 tests = {}
-tests['Anton Hvornum'] = {'links' : ['John Thilen', 'Serenity Mayflower']}
+tests['Anton Hvornum'] = {'links' : ['John Thilen', 'Serenity Mayflower', 'Nelly Söderlind', 'Elias Hvornum']}
 
 people = nodes(tests)
-print(people.nodes)
+
+nodesui.plot_nodes(people.nodes)
+nodesui.run()
