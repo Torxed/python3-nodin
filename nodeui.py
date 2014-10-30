@@ -329,7 +329,6 @@ class Circle(GenericObject):
 		super(Circle, self).__init__(texture=texture, width=width, height=height, color=color, x=x, y=y, anchor=anchor, scale=scale)
 
 	def _draw(self):
-		print('Drawing cirle: {0}, {1} with color {2}'.format(self.x, self.y, self.colorcode))
 		self.draw_circle(self.x, self.y, 5, c=self.colorcode, AA=60, rotation=0, stroke=False)
 
 class main(pyglet.window.Window):
