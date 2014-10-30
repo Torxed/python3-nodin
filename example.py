@@ -3,7 +3,7 @@ from nodeui import nodesui
 from node import nodes
 
 tests = {}
-tests['Anton'] = {'links' : ['John', 'Serenity']}
+tests['Torxed'] = {'links' : ['Alidar', 'Serenity']}
 
 people = nodes(tests)
 print(people.nodes)
