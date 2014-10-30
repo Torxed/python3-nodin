@@ -4,9 +4,10 @@ from json import loads, dumps
 from collections import OrderedDict as OD
 
 class node():
-	def __init__(self, meta, scale=1.0):
+	def __init__(self, meta, UID, scale=1.0):
 		self.x = meta['x']
 		self.y = meta['y']
+		self.UID = UID
 		self.scale = scale
 		self.meta = meta
 
@@ -37,28 +38,42 @@ class nodes():
 		return int(360 / numOfObjects)
 
 	def new_xy_space(self, x, y, angle, distance):
-		newX = x + (math.cos(angle)*distance)
-		newY = y + (math.sin(angle)*distance)
+		## TODO: Something here is wrong,
+		## without +x or +y involved, the following happens:
+		## angle = 0 & distance = 100
+		##   x = 100, y = 0  (correct)
+		## angle = 90 & distance = 100
+		##   x = -44, y = 89
+		## angle = 180 & di ...
+		##   x = -59, y = -80 
+		##
+		## Correct would be    100, 0  -> 0, 100 -> -100, 0 -> etc
+
+		newX = (math.cos(angle)*distance)+x
+		newY = (math.sin(angle)*distance)+y
 		return (newX, newY)
+
+	def recalculate_space(self, obj):
+		if not 'links' in obj and not hasattr(obj, 'links'):
+			raise KeyError('Missing "links" object to recalculate space between children.')
+
+		if hasattr(obj, 'links'):
+			return int(360 / len(obj.links))
+		return int(360 / len(obj['links']))
 
 	def add(self, uniqueue_id, meta):
 		if uniqueue_id in self.nodes:
 			raise KeyError('Uniqueue ID \'' + str(uniqueue_id) + '\' already defined.')
 		
-		self.nodes[uniqueue_id] = node(meta)
+		self.nodes[uniqueue_id] = node(meta, uniqueue_id)
 
 		new_linkmap = []
 		if 'links' in meta:
-			objects_around_point = self.fit_obj_around_path(10, 40*len(meta['links']))
-			a = self.angle_per_slize(objects_around_point)
-			sliceID = 0
 			for link in meta['links']:
 				if not link in self.nodes:
-					print('	Link:',link)
-					x, y = self.new_xy_space(self.nodes[uniqueue_id].x, self.nodes[uniqueue_id].y, a*sliceID, 10*len(meta['links']))
-					self.add(link, {'links' : [uniqueue_id], 'x' : x, 'y' : y})
+					print('	Creating subnode:',link)
+					self.add(link, {'links' : [uniqueue_id], 'x' : meta['x'], 'y' : meta['x']})
 				new_linkmap.append(self.nodes[link])
-				sliceID += 1
 		self.nodes[uniqueue_id].meta['links'] = new_linkmap
 
 	def parse(self):
@@ -76,3 +91,13 @@ class nodes():
 			print('Creating main object:',key)
 			meta['color'] = '#FF0000'
 			self.add(key, meta)
+
+			if 'links' in meta:
+				angleModifier = self.recalculate_space(self.nodes[key].meta)
+				print(angleModifier)
+				sliceID = 0
+				for obj in self.nodes[key].meta['links']:
+					print('Link',sliceID,'Angle:',angleModifier*sliceID)
+					print('Origin: {0}, {1}'.format(meta['x'], meta['y']), self.new_xy_space(meta['x'], meta['y'], angleModifier*sliceID, 100))
+					obj.x, obj.y = self.new_xy_space(meta['x'], meta['y'], angleModifier*sliceID, 100)
+					sliceID += 1

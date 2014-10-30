@@ -48,40 +48,93 @@ def mainThread():
 			return t
 	return None
 
+def positionals(args, keys, defaults=None, _map_ = {}):
+	if len(args) > len(keys):
+		raise TypeError('Positional arguments surpasses length of arguments to take in.')
+	for i in range(len(keys)):
+		if keys[i] in _map_:
+			continue
+		#	raise KeyError('Positional argument overwriting dictorial argument: ' + str(keys[i]))
+		elif len(args) < i and len(args) > 0:
+			_map_[keys[i]] = args[i]
+		else:
+			if defaults is not None:
+				_map_[keys[i]] = defaults[keys[i]] 
+			else:
+				_map_[keys[i]] = None
+	return _map_
+
 class GenericObject(pyglet.sprite.Sprite):
-	def __init__(self, texture=None, width=None, height=None, color="#C2C2C2", x=0, y=0, anchor=None, scale=1.0):
-		if texture and isfile(texture):
-			self.texture = pyglet.image.load(texture)
+	def __init__(*args, **dictWars):
+		"""
+		Bugs found:
+			- if no texture is given, trying to call move() will end up in a error stating _x is not defined
+		"""
+
+		## == If we are inherited from another class,
+		##    the arguments will be passed only into *args and we
+		##    need to unpack them outselves if 4 conditions are met
+		##    that can only happen if we are inherited.
+		## :: This ensures us to be fully dynamic against classes
+		##    interested in inheriting from us.
+		##    It means that you can pass whatever arguments you want
+		##    into this generic object and access them from your
+		##    own class, we don't force you to any positional
+		##    or optional parameters. There are some basic parameters
+		##    that are required by the graphical system tho but we'll
+		##    set them if not set to some defaults.
+		if type(args) == tuple and len(args) == 2 and len(dictWars) == 0 and type(args[1]) == dict:
+			args, dictWars = args
+		self = args[0]		
+
+
+		## == TODO: Preferably the arguments themselves should be None across all
+		## ==       variables instead of setting them to False, None, 0 etc.
+		## ==       And it's up to each individual function to recognize a None value
+		## ==       and replace it with what it needs locally?
+		m = {'texture' : None, 'width' : None, 'height' : None, 'color' : '#C2C2C2', 'x' : 0, 'y' : 0, 'anchor' : 'center', 'scale' : 1.0}
+		dictWars = positionals(args[1:], ['texture', 'width', 'height', 'color', 'x', 'y', 'anchor', 'scale'], defaults=m, _map_=dictWars)
+
+		self.render = True
+		self.moveable = True
+		self.scaleRatio = 1.0
+
+		if dictWars['texture'] and isfile(dictWars['texture']):
+			self.texture = pyglet.image.load(dictWars['texture'])
 		else:
 			## If no texture was supplied, we will create one
-			if width is None:
-				width = 60
-			if height is None:
-				height = 60
-			self.texture = self.gen_solid_img(width, height, color, alpha=255)
+			if dictWars['width'] is None:
+				dictWars['width'] = 60
+			if dictWars['height'] is None:
+				dictWars['height'] = 60
+			self.texture = self.gen_solid_img(dictWars['width'], dictWars['height'], dictWars['color'], alpha=255)
 
 		## We must instanciate pyglet.sprite.Sprite before
 		## doing anything else because otherwise x, y, scale etc
 		## will be overwritten or not accessible in Python3.
 		## (Python2 would work fine as long as supplied as an inheritance)
 		super(GenericObject, self).__init__(self.texture)
-		if scale:
-			self.scale = scale
-		elif width and width < self.texture.width:
-			self.scale = (1.0/max(width, self.texture.width))*min(width, self.texture.width)
-		elif height and height < self.texture.height:
-			self.scale = (1.0/max(height, self.texture.height))*min(height, self.texture.height)
+		
+		self.scale = dictWars['height']
+		if dictWars['width'] and dictWars['width'] < self.texture.width:
+			self.scale = (1.0/max(dictWars['width'], self.texture.width))*min(dictWars['width'], self.texture.width)
+		elif dictWars['height'] and dictWars['height'] < self.texture.height:
+			tmp = (1.0/max(dictWars['height'], self.texture.height))*min(dictWars['height'], self.texture.height)
+			if tmp > self.scale:
+				self.scale = tmp
+			#else:
+			#	Already scaled below needed threshold
 
-		self.anchor = anchor
-		if anchor == 'center':
+		self.anchor = dictWars['anchor']
+		if self.anchor == 'center':
 			self.image.anchor_x = self.image.width / 2
 			self.image.anchor_y = self.image.height / 2
 
-		self.x = x
-		self.y = y
+		self.x = dictWars['x']
+		self.y = dictWars['y']
 
 		self.triggers = {'hover' : False}
-		self.colorcode = color
+		self.colorcode = dictWars['color']
 
 	def swap_image(self, image, filePath=True, width=None):
 		try:
@@ -108,7 +161,7 @@ class GenericObject(pyglet.sprite.Sprite):
 			c = (r,g,b,alpha)#int(0.2*255))
 		return c
 
-	def gen_solid_img(self, width, height, c, alpha=255):
+	def gen_solid_img(self, width, height, c='#C2C2C2', alpha=255):
 		return pyglet.image.SolidColorImagePattern(self.color_converter(c, alpha)).create_image(width,height)
 
 	def draw_circle(self, x, y, radius, c='#FF0000', AA=60, rotation=0, stroke=False):
@@ -324,9 +377,34 @@ class GenericObject(pyglet.sprite.Sprite):
 		"""
 		self.draw()
 
+def __init__(*args, **dictWars):
+		"""
+		Grass tiles fetched from: http://opengameart.org/forumtopic/2d-art-grass-tile-request
+		"""
+		## If we are inherited from another class,
+		## the arguments will be passed only into *args and we
+		## need to unpack them outselves if 4 conditions are met
+		## that can only happen if we are inherited.
+		if type(args) == tuple and len(args) == 2 and len(dictWars) == 0 and type(args[1]) == dict:
+			args, dictWars = args
+		self = args[0]
+
+		# This is just to hide the BasicObject().
+		# We need it tho for other functions such as batched rendering
+		# (It's sort of a bug, try removing texture='...' from the Grass() call and you'll see)
+		dictWars['x'], dictWars['y'] = -100, -100
+		BasicObject.__init__(args, dictWars)
+
 class Circle(GenericObject):
-	def __init__(self, texture=None, width=None, height=None, color="#C2C2C2", x=0, y=0, anchor=None, scale=1.0):
-		super(Circle, self).__init__(texture=texture, width=width, height=height, color=color, x=x, y=y, anchor=anchor, scale=scale)
+	#def __init__(self, texture=None, width=None, height=None, color="#C2C2C2", x=0, y=0, anchor=None, scale=1.0):
+	def __init__(*args, **dictWars):
+		if type(args) == tuple and len(args) == 2 and len(dictWars) == 0 and type(args[1]) == dict:
+			args, dictWars = args
+		self = args[0]
+		# Old method:
+		#    super(Circle, self).__init__(args, dictWars)
+		# "New" generic way of passing arguments and instanciate the class:
+		GenericObject.__init__(args, dictWars)
 
 	def _draw(self):
 		self.draw_circle(self.x, self.y, 5, c=self.colorcode, AA=60, rotation=0, stroke=False)
