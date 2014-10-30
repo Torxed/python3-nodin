@@ -41,17 +41,6 @@ class nodes():
 		return angle*(math.pi/180)
 
 	def new_xy_space(self, x, y, angle, distance):
-		## TODO: Something here is wrong,
-		## without +x or +y involved, the following happens:
-		## angle = 0 & distance = 100
-		##   x = 100, y = 0  (correct)
-		## angle = 90 & distance = 100
-		##   x = -44, y = 89
-		## angle = 180 & di ...
-		##   x = -59, y = -80 
-		##
-		## Correct would be    100, 0  -> 0, 100 -> -100, 0 -> etc
-
 		newX = (math.cos(self.radiator(angle))*distance)+x
 		newY = (math.sin(self.radiator(angle))*distance)+y
 		return (newX, newY)
