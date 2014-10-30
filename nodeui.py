@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import pyglet, pickle
 from pyglet.gl import *
 from threading import *
@@ -490,5 +491,6 @@ class main(pyglet.window.Window):
 			#
 			event = self.dispatch_events()
 
-node = main()
-node.run()
+nodesui = main()
+if __name__ == '__main__':
+	nodesui.run()
