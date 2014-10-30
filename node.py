@@ -37,6 +37,9 @@ class nodes():
 	def angle_per_slize(self, numOfObjects):
 		return int(360 / numOfObjects)
 
+	def radiator(self, angle):
+		return angle*(math.pi/180)
+
 	def new_xy_space(self, x, y, angle, distance):
 		## TODO: Something here is wrong,
 		## without +x or +y involved, the following happens:
@@ -49,8 +52,8 @@ class nodes():
 		##
 		## Correct would be    100, 0  -> 0, 100 -> -100, 0 -> etc
 
-		newX = (math.cos(angle)*distance)+x
-		newY = (math.sin(angle)*distance)+y
+		newX = (math.cos(self.radiator(angle))*distance)+x
+		newY = (math.sin(self.radiator(angle))*distance)+y
 		return (newX, newY)
 
 	def recalculate_space(self, obj):
@@ -94,10 +97,7 @@ class nodes():
 
 			if 'links' in meta:
 				angleModifier = self.recalculate_space(self.nodes[key].meta)
-				print(angleModifier)
 				sliceID = 0
 				for obj in self.nodes[key].meta['links']:
-					print('Link',sliceID,'Angle:',angleModifier*sliceID)
-					print('Origin: {0}, {1}'.format(meta['x'], meta['y']), self.new_xy_space(meta['x'], meta['y'], angleModifier*sliceID, 100))
 					obj.x, obj.y = self.new_xy_space(meta['x'], meta['y'], angleModifier*sliceID, 100)
 					sliceID += 1
