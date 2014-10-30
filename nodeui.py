@@ -395,20 +395,12 @@ class Node(GenericObject):
 		GenericObject.__init__(args, dictWars)
 
 		self.sync_children = []
-		self.drag_pos = False
 		self.updating_factor = 1.0
 
 	def update_children(self, x, y, factor=1.0):
 		for link in self.dictWars['links']:
 			if link in self.dictWars['sprites'] and self.dictWars['sprites'][link].moveable:
-
-				if not self.dictWars['sprites'][link].drag_pos:
-					self.dictWars['sprites'][link].drag_pos = self.dictWars['sprites'][link].x, self.dictWars['sprites'][link].y
-					self.updating_factor = factor
-				self.dictWars['sprites'][link].drag_pos = self.dictWars['sprites'][link].drag_pos[0]+x, self.dictWars['sprites'][link].drag_pos[1]+y
-
 				self.dictWars['sprites'][link].move(x*factor, y*factor)
-				self.sync_children.append(link)
 
 	def move(self, x, y):
 		self.x += x*self.updating_factor
@@ -421,30 +413,8 @@ class Node(GenericObject):
 		self.moveable = False
 		for link in self.dictWars['links']:
 			if link in self.dictWars['sprites']:
-				if link in self.sync_children:
-					x = self.dictWars['sprites'][link].x
-					y = self.dictWars['sprites'][link].y
-					dx = self.dictWars['sprites'][link].drag_pos[0]
-					dy = self.dictWars['sprites'][link].drag_pos[1]
-
-					if (-1 > dx-x) or (dx-x > 1) or (-1 > dy-y) or (dy-y > 1):
-						if x > dx:
-							mx = -1
-						elif x < dx:
-							mx = 1
-						else:
-							mx = 0
-						if y > dy:
-							my = -1
-						elif y < dy:
-							my = 1
-						else:
-							my = 0
-
-						if my == 0 and mx == 0:
-							del(self.sync_children[self.sync_children.index(link)])
-						else:
-							self.dictWars['sprites'][link].move(mx, my)
+				#if link in self.sync_children:
+				#	self.dictWars['sprites'][link].move(mx, my)
 
 				self.draw_line(self.dictWars['sprites'][link], c='#00000')
 		self.moveable = True
