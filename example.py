@@ -9,3 +9,6 @@ people = nodes(tests)
 
 nodesui.plot_nodes(people.nodes)
 nodesui.run()
+
+people = nodes(tests)
+print(people.nodes)
