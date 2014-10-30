@@ -35,10 +35,10 @@ def dopickle():
 	pass
 
 def colorConverter(r,g,b,a=255):
-	r = (1.0/255)*r
-	g = (1.0/255)*g
-	b = (1.0/255)*b
-	a = (1.0/255)*a
+	r = r/255.0
+	g = g/255.0
+	b = b/255.0
+	a = a/255.0
 	return r,g,b,a
 
 def mainThread():
@@ -98,7 +98,7 @@ class GenericObject(pyglet.sprite.Sprite):
 			self.scale = (1.0/max(height, self.texture.height))*min(height, self.texture.height)
 
 	def gen_solid_img(self, width, height, c, alpha=255):
-		if '#' in c:
+		if c[0] == '#':
 			c = c.lstrip("#")
 			c = max(6-len(c),0)*"0" + c
 			r = int(c[:2], 16)
