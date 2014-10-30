@@ -364,8 +364,7 @@ class GenericObject(pyglet.sprite.Sprite):
 		return True
 
 	def drag(self, x, y):
-		self.x += x
-		self.y += y
+		self.move(x, y)
 
 	def gettext(self):
 		return ''
@@ -378,9 +377,6 @@ class GenericObject(pyglet.sprite.Sprite):
 	def move(self, x, y):
 		self.x += x
 		self.y += y
-		self.moveable = False
-		#self.update_children()
-		self.moveable = True
 
 	def _draw(self):
 		"""
@@ -398,15 +394,65 @@ class Node(GenericObject):
 		self = args[0]
 		GenericObject.__init__(args, dictWars)
 
+		self.sync_children = []
+		self.drag_pos = False
+		self.updating_factor = 1.0
+
+	def update_children(self, x, y, factor=1.0):
+		for link in self.dictWars['links']:
+			if link in self.dictWars['sprites'] and self.dictWars['sprites'][link].moveable:
+
+				if not self.dictWars['sprites'][link].drag_pos:
+					self.dictWars['sprites'][link].drag_pos = self.dictWars['sprites'][link].x, self.dictWars['sprites'][link].y
+					self.updating_factor = factor
+				self.dictWars['sprites'][link].drag_pos = self.dictWars['sprites'][link].drag_pos[0]+x, self.dictWars['sprites'][link].drag_pos[1]+y
+
+				self.dictWars['sprites'][link].move(x*factor, y*factor)
+				self.sync_children.append(link)
+
+	def move(self, x, y):
+		self.x += x*self.updating_factor
+		self.y += y*self.updating_factor
+		self.moveable = False
+		self.update_children(x, y, factor=self.updating_factor*0.8)
+		self.moveable = True
+
 	def _draw(self):
+		self.moveable = False
 		for link in self.dictWars['links']:
 			if link in self.dictWars['sprites']:
+				if link in self.sync_children:
+					x = self.dictWars['sprites'][link].x
+					y = self.dictWars['sprites'][link].y
+					dx = self.dictWars['sprites'][link].drag_pos[0]
+					dy = self.dictWars['sprites'][link].drag_pos[1]
+
+					if (-1 < dx-x > 1) or (-1 < dy-y > 1):
+						if x > dx:
+							mx = -1
+						elif x < dx:
+							mx = 1
+						else:
+							mx = 0
+						if y > dy:
+							my = -1
+						elif y < dy:
+							my = 1
+						else:
+							my = 0
+
+						if my == 0 and mx == 0:
+							del(self.sync_children[self.sync_children.index(link)])
+						else:
+							self.dictWars['sprites'][link].move(mx, my)
+
 				self.draw_line(self.dictWars['sprites'][link], c='#00000')
+		self.moveable = True
 		self.draw_circle(self.x, self.y, 5, c=self.colorcode, AA=60, rotation=0, stroke=False)
 
 class main(pyglet.window.Window):
 	def __init__ (self,):
-		super(main, self).__init__(800, 600, fullscreen = False, caption='Shatter')
+		super(main, self).__init__(800, 600, fullscreen = False, caption='Nodes')
 		self.bg = GenericObject(width=800, height=600, color=(228,228,228,255), anchor='botleft')
 
 		self.sprites = OD()
