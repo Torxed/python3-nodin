@@ -136,6 +136,8 @@ class GenericObject(pyglet.sprite.Sprite):
 		self.triggers = {'hover' : False}
 		self.colorcode = dictWars['color']
 
+		self.dictWars = dictWars
+
 	def swap_image(self, image, filePath=True, width=None):
 		try:
 			if isfile(image):
