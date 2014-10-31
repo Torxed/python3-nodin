@@ -50,17 +50,21 @@ class nodes():
 		return (newX, newY)
 
 	def recalculate_space(self, obj):
-		if not 'links' in obj and not hasattr(obj, 'links'):
-			raise KeyError('Missing "links" object to recalculate space between children.')
+		links = None
 
 		if hasattr(obj, 'links'):
-			return int(360 / len(obj.links))
-		return int(360 / len(obj['links']))
+			links = obj.links
+		elif 'links' in obj:
+			links = obj['links']
+		else
+			raise KeyError('Missing "links" object to recalculate space between children.')
+
+		return angle_per_slize(len(links))
 
 	def add(self, uniqueue_id, meta):
 		if uniqueue_id in self.nodes:
 			raise KeyError('Uniqueue ID \'' + str(uniqueue_id) + '\' already defined.')
-		
+
 		self.nodes[uniqueue_id] = node(meta, uniqueue_id)
 
 		new_linkmap = []
