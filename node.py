@@ -3,10 +3,15 @@ import math
 from json import loads, dumps
 from collections import OrderedDict as OD
 
-class node():
+from physics import physics
+
+class node(physics):
 	def __init__(self, meta, UID, scale=1.0):
+		physics.__init__(self)
 		self.x = meta['x']
 		self.y = meta['y']
+		self.velocity = (0, 0)
+		
 		self.UID = UID
 		self.scale = scale
 		self.meta = meta
@@ -14,6 +19,25 @@ class node():
 			self.links = meta['links']
 		else:
 			self.links = []
+
+	def move(self, x, y):
+		if hasattr(self, 'compute_forces'):
+			compute_forces(nodes)
+
+			# Update positions based on current velocity. The new
+			# positions will be used during the next iteration.
+			for node in nodes:
+				velocity_x, velocity_y = velocities[node]
+				node_x, node_y = nodes[node]["pos"]
+
+				# WARNING: Do not show this to a physiscist.
+				node_x += velocity_x
+				node_y += velocity_y
+
+				nodes[node]["pos"] = (node_x, node_y)
+		else:
+			self.x += x
+			self.y += y
 
 class nodes():
 	def __init__(self, inputData, width=800, height=600):
