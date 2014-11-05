@@ -13,13 +13,13 @@ class physics():
 
 		self.velocities = {}
 
-	def apply_friction(vector):
+	def apply_friction(self, vector):
 		"""Slows down a node's velocity-vector due to friction"""
 
-		friction_vector = scale_vector(vector, friction_scale)
-		return add_vectors(vector, friction_vector)
+		friction_vector = self.scale_vector(vector, friction_scale)
+		return self.add_vectors(vector, friction_vector)
 
-	def pythagoras(node1, node2):
+	def pythagoras(self, node1, node2):
 		"""Calculates the distance between two objects in 2D-space."""
 
 		# TODO: Optimize this code depending on what "nodes" looks like
@@ -37,18 +37,18 @@ class physics():
 
 		return ((x_1 + x_2)**2 + (y_1 + y_2)**2)**0.5
 
-	def gen_vector(pos_1, pos_2):
+	def gen_vector(self, pos_1, pos_2):
 		"""Creates a vector from position 1 to position 2."""
 
 		x_1, y_1 = pos_1
 		x_2, y_2 = pos_2
 
 		angle = (y_2 - y_1) / (x_2 - x_1)
-		speed = pythagoras(pos_1, pos_2)
+		speed = self.pythagoras(pos_1, pos_2)
 
 		return (angle, speed)
 
-	def add_vectors(vector_1, vector_2):
+	def add_vectors(self, vector_1, vector_2):
 		"""Add vector_1 and vector_2 to each other."""
 
 		angle_1, speed_1 = vector_1
@@ -68,7 +68,7 @@ class physics():
 		angle_result = asin(y_result)
 		speed_result = (x_result**2 + y_result**2)**0.5		# Pythagoras
 
-	def scale_vector(vector, scale):
+	def scale_vector(self, vector, scale):
 		"""Scales the given vector. If scale==2, the vector becomes twice as
 		long. If scale==0.5, the vector becomes half as long. If scale==-1,
 		the vector is as long but becomes inverted (180 degrees)."""
@@ -77,7 +77,7 @@ class physics():
 		speed *= scale
 		return (angle, speed)
 
-	def accelerate(current_speed, acceleration_vector):
+	def accelerate(self, current_speed, acceleration_vector):
 		"""Accelerates or (if vector is in the opposite direction of the
 		current velocity) decelerates the given current speed."""
 
@@ -85,8 +85,8 @@ class physics():
 
 		x, y = current_speed
 
-		x += math.cos(acceleration_angle) * acceleration_scale[0] * acceleration_strength
-		y += math.sin(acceleration_angle) * acceleration_scale[1] * acceleration_strength
+		x += math.cos(acceleration_angle) * self.acceleration_scale[0] * acceleration_strength
+		y += math.sin(acceleration_angle) * self.acceleration_scale[1] * acceleration_strength
 
 		# TODO: Is it a good idea to round these down? It should eliminate all tiny
 		#	movements, but perhaps small movements are needed for smoothness?
@@ -95,57 +95,58 @@ class physics():
 
 		return (x, y)
 
-	def compute_forces(nodes):
+	def compute_forces(self, node):
 		"""Computes the forces acting upon the nodes."""
 
 		# First run. Populate it.
 		#
 		# TODO: Optimize. Do not perform this check every single run
-		if velocities == {}:
-			for node in nodes:
-				velocities[node] = (0,0)	# x and y speeds
+		#if velocities == {}:
+		#	for node in nodes:
+		#		velocities[node] = (0,0)	# x and y speeds
 
-		changed = False
-		for node in nodes:
-			vectors = []
-			for link in node["links"]:
-				neighbor = links[link]
+		#changed = False
 
-				relation = gen_vector(node, neighbor)
+		#for node in nodes:
+		vectors = []
+		for neighbor in node.links:
+			#neighbor = links[link]
 
-				attr = scale_vector(relation, link_attraction_scale)
-				rep = scale_vector(relation, node_repulsion_scale)
+			relation = self.gen_vector(node, neighbor)
 
-				#if too close:
-				#	vector =
-				#elif too far:
-				#	attract
+			attr = self.scale_vector(relation, self.link_attraction_scale)
+			rep = self.scale_vector(relation, self.node_repulsion_scale)
 
-				vectors += [attr]
-				vectors += [rep]
+			#if too close:
+			#	vector =
+			#elif too far:
+			#	attract
 
-			# Compute the sum of all forces acting upon this node
-			sum_vector = (0,0)
-			for vector in vectors:
-				sum_vector = add_vectors(sum_vector, vector)
+			vectors += [attr]
+			vectors += [rep]
 
-			sum_vector = apply_friction(sum_vector)
+		# Compute the sum of all forces acting upon this node
+		sum_vector = (0,0)
+		for vector in vectors:
+			sum_vector = self.add_vectors(sum_vector, vector)  ## == Fix: return value
 
-			# TODO: Perform this comparison directly on sum_vector
-			#	possibly before friction has been applied.
-			old_velocity = velocities[node]
-			new_velocity = accelerate(velocities[node], sum_vector)
+		sum_vector = self.apply_friction(sum_vector)
 
-			# TODO: Don't go below min_speed
+		# TODO: Perform this comparison directly on sum_vector
+		#	possibly before friction has been applied.
+		old_velocity = node.velocity
+		self.velocity = self.accelerate(velocities[node], sum_vector)
 
-			if old_velocity != new_velocity:
-				changed = True
+		# TODO: Don't go below min_speed
 
-			# update velocity for this node
-			velocities[node] = accelerate(velocities[node], sum_vector)
+		#if old_velocity != new_velocity:
+		#	changed = True
+
+		# update velocity for this node
+		#velocities[node] = accelerate(velocities[node], sum_vector)
 
 		# TODO: This is not always the same as everything standing still
-		return changed
+		#return changed
 
 if __name__ == '__main__':
 	# Populate global links with node data
