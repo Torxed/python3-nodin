@@ -398,7 +398,7 @@ class Node(GenericObject):
 		self.updating_factor = 1.0
 
 	def update_children(self, x, y, factor=1.0):
-		for link in self.dictWars['links']:
+		for link in self.dictWars['nodeObj'].links:
 			if link in self.dictWars['sprites'] and self.dictWars['sprites'][link].moveable:
 				self.dictWars['sprites'][link].move(x*factor, y*factor)
 
@@ -411,7 +411,7 @@ class Node(GenericObject):
 
 	def _draw(self):
 		self.moveable = False
-		for link in self.dictWars['links']:
+		for link in self.dictWars['nodeObj'].links]:
 			if link in self.dictWars['sprites']:
 				#if link in self.sync_children:
 				#	self.dictWars['sprites'][link].move(mx, my)
@@ -553,7 +553,7 @@ class main(pyglet.window.Window):
 			color = (0,0,0,255)
 			if 'color' in node.meta:
 				color = node.meta['color']
-			self.mergeMap[key] = Node(x=node.x, y=node.y, width=10, height=10, color=color, links=node.links, sprites=self.sprites)
+			self.mergeMap[key] = Node(x=node.x, y=node.y, width=10, height=10, color=color, nodeObj=node, sprites=self.sprites)
 
 	def render(self):
 		self.clear()
