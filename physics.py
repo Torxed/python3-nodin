@@ -14,7 +14,7 @@ class physics():
 		self.velocities = {}
 
 	def apply_friction(self, vector):
-		"""Slows down a node's velocity-vector due to friction"""
+		"""Slows down a node's velocity-vector due to friction."""
 
 		friction_vector = self.scale_vector(vector, friction_scale)
 		return self.add_vectors(vector, friction_vector)
