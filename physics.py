@@ -23,19 +23,25 @@ class physics():
 		"""Calculates the distance between two objects in 2D-space."""
 
 		# TODO: Optimize this code depending on what "nodes" looks like
+
 		x_1 = x_2 = y_1 = y_2 = None
-		if type(node1) != tuple:
+		if type(node1) == int or type(node1) == float:
+			x_1, y_1 = 0, 0
+			x_2, y_2 = node1, node2
+		elif type(node1) == tuple:
+			x_1, y_1 = node1
+			x_2, y_2 = node2
+		else:
 			if node1.position and type(node1.position) == tuple:
 				node1 = node1.position
 				node2 = node2.position
 			elif type(node1.x) == int:
 				x_1, y_1 = node1.x, node1.y
 				x_2, y_2 = node2.x, node2.y
+			x_1, y_1 = node1
+			x_2, y_2 = node2
 
-		x_1, y_1 = node1
-		x_2, y_2 = node2
-
-		return ((x_1 + x_2)**2 + (y_1 + y_2)**2)**0.5
+		return ((x_2 - x_1)**2 + (y_2 - y_1)**2)**0.5
 
 	def gen_vector(self, pos_1, pos_2):
 		"""Creates a vector from position 1 to position 2."""
@@ -66,7 +72,7 @@ class physics():
 
 		# Convert the (x,y) of the result into (angle, speed)
 		angle_result = asin(y_result)
-		speed_result = (x_result**2 + y_result**2)**0.5		# Pythagoras
+		speed_result = self.pythagoras(x_result, y_result)
 
 	def scale_vector(self, vector, scale):
 		"""Scales the given vector. If scale==2, the vector becomes twice as
