@@ -98,29 +98,12 @@ class physics():
 	def compute_forces(self, node):
 		"""Computes the forces acting upon the nodes."""
 
-		# First run. Populate it.
-		#
-		# TODO: Optimize. Do not perform this check every single run
-		#if velocities == {}:
-		#	for node in nodes:
-		#		velocities[node] = (0,0)	# x and y speeds
-
-		#changed = False
-
-		#for node in nodes:
 		vectors = []
 		for neighbor in node.links:
-			#neighbor = links[link]
-
 			relation = self.gen_vector(node, neighbor)
 
 			attr = self.scale_vector(relation, self.link_attraction_scale)
 			rep = self.scale_vector(relation, self.node_repulsion_scale)
-
-			#if too close:
-			#	vector =
-			#elif too far:
-			#	attract
 
 			vectors += [attr]
 			vectors += [rep]
@@ -138,27 +121,3 @@ class physics():
 		self.velocity = self.accelerate(velocities[node], sum_vector)
 
 		# TODO: Don't go below min_speed
-
-		#if old_velocity != new_velocity:
-		#	changed = True
-
-		# update velocity for this node
-		#velocities[node] = accelerate(velocities[node], sum_vector)
-
-		# TODO: This is not always the same as everything standing still
-		#return changed
-
-if __name__ == '__main__':
-	# Populate global links with node data
-	for node in nodes:
-		for link in node["links"]:
-			links += [(node, node["links"][link])]
-
-	# Main loop
-	while compute_forces(nodes):
-		# TODO: Handle input from user
-		sleep(0.1)
-		draw()
-	else:
-		# TODO: Resume normal work
-		pass
