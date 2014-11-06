@@ -1,4 +1,4 @@
-import math
+from math import sin, cos, asin, pi
 
 class physics():
 	def __init__(self):
@@ -91,8 +91,8 @@ class physics():
 
 		x, y = current_speed
 
-		x += math.cos(acceleration_angle) * self.acceleration_scale[0] * acceleration_strength
-		y += math.sin(acceleration_angle) * self.acceleration_scale[1] * acceleration_strength
+		x += cos(acceleration_angle) * self.acceleration_scale[0] * acceleration_strength
+		y += sin(acceleration_angle) * self.acceleration_scale[1] * acceleration_strength
 
 		# TODO: Is it a good idea to round these down? It should eliminate all tiny
 		#	movements, but perhaps small movements are needed for smoothness?
