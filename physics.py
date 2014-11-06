@@ -100,7 +100,7 @@ class physics():
 
 		vectors = []
 		for neighbor in node.links:
-			relation = self.gen_vector(node, neighbor)
+			relation = self.gen_vector((node.x, node.y), (neighbor.x, neighbor.y))
 
 			attr = self.scale_vector(relation, self.link_attraction_scale)
 			rep = self.scale_vector(relation, self.node_repulsion_scale)
