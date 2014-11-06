@@ -11,7 +11,7 @@ class node(physics):
 		self.x = meta['x']
 		self.y = meta['y']
 		self.velocity = (0, 0)
-		
+
 		self.UID = UID
 		self.scale = scale
 		self.meta = meta
@@ -22,19 +22,12 @@ class node(physics):
 
 	def move(self, x, y):
 		if hasattr(self, 'compute_forces'):
-			compute_forces(nodes)
+			# compute_forces() should now update self.velocity
+			# enabling us to simply use it to move x+veloX, x+veloY
+			compute_forces(self)
 
-			# Update positions based on current velocity. The new
-			# positions will be used during the next iteration.
-			for node in nodes:
-				velocity_x, velocity_y = velocities[node]
-				node_x, node_y = nodes[node]["pos"]
-
-				# WARNING: Do not show this to a physiscist.
-				node_x += velocity_x
-				node_y += velocity_y
-
-				nodes[node]["pos"] = (node_x, node_y)
+			self.x += self.velocity[0]
+			self.y += self.velocity[1]
 		else:
 			self.x += x
 			self.y += y
