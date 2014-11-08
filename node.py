@@ -3,7 +3,9 @@ import math
 from json import loads, dumps
 from collections import OrderedDict as OD
 
-from physics import physics
+#from physics import physics
+class physics():
+	pass
 
 class node(physics):
 	def __init__(self, meta, UID, scale=1.0):
@@ -73,10 +75,10 @@ class nodes():
 			links = obj.links
 		elif 'links' in obj:
 			links = obj['links']
-		else
+		else:
 			raise KeyError('Missing "links" object to recalculate space between children.')
 
-		return angle_per_slize(len(links))
+		return self.angle_per_slize(len(links))
 
 	def add(self, uniqueue_id, meta):
 		if uniqueue_id in self.nodes:

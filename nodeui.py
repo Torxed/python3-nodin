@@ -97,6 +97,7 @@ class GenericObject(pyglet.sprite.Sprite):
 
 		self.render = True
 		self.moveable = True
+		self.moving = True
 
 		if dictWars['texture'] and isfile(dictWars['texture']):
 			self.texture = pyglet.image.load(dictWars['texture'])
@@ -397,28 +398,36 @@ class Node(GenericObject):
 		self.sync_children = []
 		self.updating_factor = 1.0
 
-	def update_children(self, x, y, factor=1.0):
-		for link in self.dictWars['nodeObj'].links:
-			if link in self.dictWars['sprites'] and self.dictWars['sprites'][link].moveable:
-				self.dictWars['sprites'][link].move(x*factor, y*factor)
+	#def update_children(self, x, y, factor=1.0):
+	#	for link in self.dictWars['nodeObj'].links:
+	#		if link in self.dictWars['sprites'] and self.dictWars['sprites'][link].moveable:
+	#			self.dictWars['sprites'][link].move(x*factor, y*factor)
+
+	def drag(self, x=0, y=0):
+		pass
+
+	def on_mouse_motion(self, x, y, dx, dy):
+		print(x, y, dx, dy)
+		if self.moving:
+			## Update both object and graphics
+			self.dictWars['nodeObj'].x = self.x = x+dx
+			self.dictWars['nodeObj'].y = self.y = y+dy
 
 	def move(self, x, y):
-		self.x += x*self.updating_factor
-		self.y += y*self.updating_factor
-		self.moveable = False
-		self.update_children(x, y, factor=self.updating_factor*0.8)
-		self.moveable = True
+		#self.x += x*self.updating_factor
+		#self.y += y*self.updating_factor
+		#self.moveable = False
+		#self.update_children(x, y, factor=self.updating_factor*0.8)
+		#self.moveable = True
+		pass
 
 	def _draw(self):
-		self.moveable = False
-		for link in self.dictWars['nodeObj'].links]:
+		#self.moveable = False
+		for link in self.dictWars['nodeObj'].links:
 			if link in self.dictWars['sprites']:
-				#if link in self.sync_children:
-				#	self.dictWars['sprites'][link].move(mx, my)
-
 				self.draw_line(self.dictWars['sprites'][link], c='#00000')
-		self.moveable = True
-		self.draw_circle(self.x, self.y, 5, c=self.colorcode, AA=60, rotation=0, stroke=False)
+		#self.moveable = True
+		self.draw_circle(self.dictWars['nodeObj'].x, self.dictWars['nodeObj'].y, 5, c=self.colorcode, AA=60, rotation=0, stroke=False)
 
 class main(pyglet.window.Window):
 	def __init__ (self,):
@@ -429,7 +438,6 @@ class main(pyglet.window.Window):
 		#self.lines = OD()
 		self.mergeMap = OD()
 		
-		self.drag = False
 		self.active = None, None
 		self.alive = 1
 		self.multiselect = False
@@ -453,7 +461,10 @@ class main(pyglet.window.Window):
 			if sprite:
 				sprite_obj = sprite.click_check(x, y)
 				if sprite_obj:
-					sprite_obj.hover(x, y)
+					if hasattr(sprite_obj, 'on_mouse_motion'):
+						sprite_obj.on_mouse_motion(x, y, dx, dy)
+					elif hasattr(sprite_obj, 'hover'):
+						sprite_obj.hover(x, y)
 				else:
 					sprite.hover_out(x, y)
 
@@ -472,7 +483,7 @@ class main(pyglet.window.Window):
 
 	def on_mouse_release(self, x, y, button, modifiers):
 		if button == 1:
-			if self.active[1] and not self.drag and self.multiselect == False:
+			if self.active[1] and not self.moving and self.multiselect == False:
 				self.active[1].click(x, y, self.mergeMap)
 		elif button == 4:
 			if not self.active[0]:
@@ -480,7 +491,7 @@ class main(pyglet.window.Window):
 			else:
 				self.active[1].right_click(x, y, self.mergeMap)
 
-		self.drag = False
+		self.moving = False
 	
 	def on_mouse_press(self, x, y, button, modifiers):
 		if button == 1 or button == 4:
@@ -495,9 +506,10 @@ class main(pyglet.window.Window):
 										self.multiselect.append(sprite_name)
 
 	def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
-		self.drag = True
+		self.moving = True
 		if self.active[1] and self.multiselect == False:
-			self.active[1].drag(dx, dy)
+			if not hasattr(self.active[1], 'physics'):
+				self.active[1].drag(dx, dy)
 		elif self.multiselect:
 			for obj in self.multiselect:
 				self.sprites[obj].move(dx, dy)
