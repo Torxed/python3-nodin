@@ -1,4 +1,4 @@
-from math import sin, cos, asin, pi
+from math import sin, cos, atan2, pi
 
 class physics():
 	def __init__(self):
@@ -71,7 +71,7 @@ class physics():
 		y_result = y_1 + y_2
 
 		# Convert the (x,y) of the result into (angle, speed)
-		angle_result = asin(y_result)
+		angle_result = atan2(y_result, x_result)	# y must be before x
 		speed_result = self.pythagoras(x_result, y_result)
 
 		return (angle_result, speed_result)
