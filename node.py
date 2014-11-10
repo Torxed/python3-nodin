@@ -26,6 +26,8 @@ class node(physics):
 			if hasattr(link, 'compute_forces'):
 				if time() - link.last_move > 0.25:
 					## JOHN:
+					## This function will loop through direct neighbours only
+					## and compute forces
 					nx, ny = self.compute_forces(link)
 					link.move(nx, ny)
 			else:
@@ -36,10 +38,12 @@ class node(physics):
 	def move(self, x, y):
 		diff = x-self.x, y-self.y
 		self.x, self.y = x, y
+		self.meta['x'] = self.x
+		self.meta['y'] = self.y
 
 		self.last_move = time()
 		self.update_children(diff[0], diff[1])
-		
+
 class nodes():
 	def __init__(self, inputData, width=800, height=600):
 		self.width = width

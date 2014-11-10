@@ -104,15 +104,17 @@ class physics():
 	def compute_forces(self, node):
 		"""Computes the forces acting upon the nodes."""
 
+		## Node is the NEIGHBOUR, self == node object.
+
 		vectors = []
-		for neighbor in node.meta['links']:
-			relation = self.gen_vector((node.x, node.y), (neighbor.x, neighbor.y))
+		#for neighbor in node.meta['links']:
+		relation = self.gen_vector((self.x, self.y), (node.x, node.y))
 
-			attr = self.scale_vector(relation, self.link_attraction_scale)
-			rep = self.scale_vector(relation, self.node_repulsion_scale)
+		attr = self.scale_vector(relation, self.link_attraction_scale)
+		rep = self.scale_vector(relation, self.node_repulsion_scale)
 
-			vectors += [attr]
-			vectors += [rep]
+		vectors += [attr]
+		vectors += [rep]
 
 		# Compute the sum of all forces acting upon this node
 		sum_vector = (0,0)
