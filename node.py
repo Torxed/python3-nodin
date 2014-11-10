@@ -2,6 +2,7 @@
 import math
 from json import loads, dumps
 from collections import OrderedDict as OD
+from time import time
 
 #from physics import physics
 class physics():
@@ -17,22 +18,36 @@ class node(physics):
 		self.UID = UID
 		self.scale = scale
 		self.meta = meta
-		if 'links' in meta:
-			self.links = meta['links']
-		else:
-			self.links = []
+
+		self.last_move = time()
+
+	def update_children(self, x, y):
+		for link in self.meta['links']:
+			if hasattr(link, 'compute_forces'):
+				if time() - link.last_move > 0.25:
+					print('Moving child')
+					nx, ny = self.compute_forces(link)
+					link.move(nx, ny)
+			else:
+				link.x += x
+				link.y += y
 
 	def move(self, x, y):
-		if hasattr(self, 'compute_forces'):
+		diff = x-self.x, y-self.y
+		self.x, self.y = x, y
+
+		self.last_move = time()
+		self.update_children(diff[0], diff[1])
+		#if hasattr(self, 'compute_forces'):
 			# compute_forces() should now update self.velocity
 			# enabling us to simply use it to move x+veloX, x+veloY
-			compute_forces(self)
+		#	compute_forces(self)
 
-			self.x += self.velocity[0]
-			self.y += self.velocity[1]
-		else:
-			self.x += x
-			self.y += y
+		#	self.x += self.velocity[0]
+		#	self.y += self.velocity[1]
+		#else:
+		#	self.x += x
+		#	self.y += y
 
 class nodes():
 	def __init__(self, inputData, width=800, height=600):
@@ -93,6 +108,7 @@ class nodes():
 					print('	Creating subnode:',link)
 					self.add(link, {'links' : [uniqueue_id], 'x' : meta['x'], 'y' : meta['x']})
 				new_linkmap.append(self.nodes[link])
+
 		self.nodes[uniqueue_id].meta['links'] = new_linkmap
 
 	def parse(self):
