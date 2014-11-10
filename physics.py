@@ -74,6 +74,8 @@ class physics():
 		angle_result = asin(y_result)
 		speed_result = self.pythagoras(x_result, y_result)
 
+		return (angle_result, speed_result)
+
 	def scale_vector(self, vector, scale):
 		"""Scales the given vector. If scale==2, the vector becomes twice as
 		long. If scale==0.5, the vector becomes half as long. If scale==-1,
