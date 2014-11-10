@@ -426,13 +426,12 @@ class Node(GenericObject):
 
 	def update(self):
 		if not self.iteration_updated:
+			self.dictWars['nodeObj'].update()
 			self.x, self.y = self.dictWars['nodeObj'].x, self.dictWars['nodeObj'].y
-			self.iteration_updated = True
 
 	def _draw(self):
 		for link in self.dictWars['nodeObj'].meta['links']:
 			if link.UID in self.dictWars['sprites']:
-				#if time() - self.dictWars['sprites'][link.UID].dictWars['nodeObj'].last_move > 0.25:
 				self.dictWars['sprites'][link.UID].update()
 				self.draw_line(self.dictWars['sprites'][link.UID], c='#00000')
 		self.draw_circle(self.dictWars['nodeObj'].x, self.dictWars['nodeObj'].y, 5, c=self.colorcode, AA=60, rotation=0, stroke=False)

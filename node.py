@@ -19,19 +19,18 @@ class node(physics):
 		self.scale = scale
 		self.meta = meta
 
-		self.last_move = time()
+	def update(self):
+		self.x += self.velocity[0]
+		self.y += self.velocity[1]
+		self.meta['x'] = self.x
+		self.meta['y'] = self.y
 
 	def update_children(self, x, y):
-		for link in self.meta['links']:
-			if hasattr(link, 'compute_forces'):
-				if time() - link.last_move > 0.25:
-					## JOHN:
-					## This function will loop through direct neighbours only
-					## and compute forces
-					nx, ny = self.compute_forces(link)
-					link.move(nx, ny)
-			else:
-				print('Child is missing physics, moving instant!')
+		if hasattr(self, 'compute_forces'):
+			self.compute_forces()
+		else:
+			print('No physics involved..')
+			for link in self.meta['links']:
 				link.x += x
 				link.y += y
 
@@ -41,7 +40,6 @@ class node(physics):
 		self.meta['x'] = self.x
 		self.meta['y'] = self.y
 
-		self.last_move = time()
 		self.update_children(diff[0], diff[1])
 
 class nodes():

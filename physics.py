@@ -101,31 +101,37 @@ class physics():
 
 		return (x, y)
 
-	def compute_forces(self, node):
+	def compute_forces(self):
 		"""Computes the forces acting upon the nodes."""
 
-		## Node is the NEIGHBOUR, self == node object.
+		## == Note
+		## :: compute_forces() have access to self and neighbours via 
+		## :: self.meta['links']
+		## ::
+		## :: self.meta['link'][UID].velocity is the target to update
+		## :: Each render will force the node to move according to this
+		## :: velocity. No loop will be done in nodes.py any more.
 
 		vectors = []
-		#for neighbor in node.meta['links']:
-		relation = self.gen_vector((self.x, self.y), (node.x, node.y))
+		for neighbor in self.meta['links']:
+			relation = self.gen_vector((self.x, self.y), (neighbor.x, neighbor.y))
 
-		attr = self.scale_vector(relation, self.link_attraction_scale)
-		rep = self.scale_vector(relation, self.node_repulsion_scale)
+			attr = self.scale_vector(relation, self.link_attraction_scale)
+			rep = self.scale_vector(relation, self.node_repulsion_scale)
 
-		vectors += [attr]
-		vectors += [rep]
+			vectors += [attr]
+			vectors += [rep]
 
-		# Compute the sum of all forces acting upon this node
-		sum_vector = (0,0)
-		for vector in vectors:
-			sum_vector = self.add_vectors(sum_vector, vector)  ## == Fix: return value
+			# Compute the sum of all forces acting upon this node
+			sum_vector = (0,0)
+			for vector in vectors:
+				sum_vector = self.add_vectors(sum_vector, vector)  ## == Fix: return value
 
-		sum_vector = self.apply_friction(sum_vector)
+			sum_vector = self.apply_friction(sum_vector)
 
-		# TODO: Perform this comparison directly on sum_vector
-		#	possibly before friction has been applied.
-		old_velocity = node.velocity
-		self.velocity = self.accelerate(velocities[node], sum_vector)
+			# TODO: Perform this comparison directly on sum_vector
+			#	possibly before friction has been applied.
+			old_velocity = neighbor.velocity
+			self.velocity = self.accelerate(velocities[neighbor.UID], sum_vector)
 
-		# TODO: Don't go below min_speed
+			# TODO: Don't go below min_speed
