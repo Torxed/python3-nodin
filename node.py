@@ -4,9 +4,9 @@ from json import loads, dumps
 from collections import OrderedDict as OD
 from time import time
 
-#from physics import physics
-class physics():
-	pass
+from physics import physics
+#class physics():
+#	pass
 
 class node(physics):
 	def __init__(self, meta, UID, scale=1.0):
@@ -25,10 +25,11 @@ class node(physics):
 		for link in self.meta['links']:
 			if hasattr(link, 'compute_forces'):
 				if time() - link.last_move > 0.25:
-					print('Moving child')
+					## JOHN:
 					nx, ny = self.compute_forces(link)
 					link.move(nx, ny)
 			else:
+				print('Child is missing physics, moving instant!')
 				link.x += x
 				link.y += y
 
@@ -38,17 +39,7 @@ class node(physics):
 
 		self.last_move = time()
 		self.update_children(diff[0], diff[1])
-		#if hasattr(self, 'compute_forces'):
-			# compute_forces() should now update self.velocity
-			# enabling us to simply use it to move x+veloX, x+veloY
-		#	compute_forces(self)
-
-		#	self.x += self.velocity[0]
-		#	self.y += self.velocity[1]
-		#else:
-		#	self.x += x
-		#	self.y += y
-
+		
 class nodes():
 	def __init__(self, inputData, width=800, height=600):
 		self.width = width

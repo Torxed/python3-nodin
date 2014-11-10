@@ -105,7 +105,7 @@ class physics():
 		"""Computes the forces acting upon the nodes."""
 
 		vectors = []
-		for neighbor in node.links:
+		for neighbor in node.meta['links']:
 			relation = self.gen_vector((node.x, node.y), (neighbor.x, neighbor.y))
 
 			attr = self.scale_vector(relation, self.link_attraction_scale)

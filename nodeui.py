@@ -411,11 +411,6 @@ class Node(GenericObject):
 
 		self.iteration_updated = False
 
-	#def update_children(self, x, y, factor=1.0):
-	#	for link in self.dictWars['nodeObj'].links:
-	#		if link in self.dictWars['sprites'] and self.dictWars['sprites'][link].moveable:
-	#			self.dictWars['sprites'][link].move(x*factor, y*factor)
-
 	def drag(self, x=0, y=0):
 		pass
 
@@ -435,12 +430,11 @@ class Node(GenericObject):
 			self.iteration_updated = True
 
 	def _draw(self):
-		#self.moveable = False
 		for link in self.dictWars['nodeObj'].meta['links']:
 			if link.UID in self.dictWars['sprites']:
+				#if time() - self.dictWars['sprites'][link.UID].dictWars['nodeObj'].last_move > 0.25:
 				self.dictWars['sprites'][link.UID].update()
 				self.draw_line(self.dictWars['sprites'][link.UID], c='#00000')
-		#self.moveable = True
 		self.draw_circle(self.dictWars['nodeObj'].x, self.dictWars['nodeObj'].y, 5, c=self.colorcode, AA=60, rotation=0, stroke=False)
 
 		self.iteration_updated = False
@@ -485,23 +479,12 @@ class main(pyglet.window.Window):
 		#else:
 		#	sprite.hover_out(x, y)
 
-	# def link_objects(self, start, end):
-	# 	start_obj, end_obj = None, None
-	# 	for sprite_name, sprite in self.sprites.items():
-	# 		if sprite and sprite_name not in ('2-loading'):
-	# 			if sprite.click_check(start[0], start[1]):
-	# 				start_obj = sprite_name, sprite
-	# 			if sprite.click_check(end[0], end[1]):
-	# 				end_obj = sprite_name, sprite
-
-	# 	del(self.lines['link'])
-	# 	if start_obj and end_obj and end_obj[0] != start_obj[0]:
-	# 		start_obj[1].link(end_obj[1])
-
 	def on_mouse_release(self, x, y, button, modifiers):
 		if button == 1:
 			if self.active[1] and self.multiselect == False:
 				self.active[1].click(x, y, self.mergeMap)
+			else:
+				self.active[1].dictWars['nodeObj'].update_children()
 		elif button == 4:
 			if not self.active[0]:
 				pass #Do something on empty spaces?
@@ -523,13 +506,6 @@ class main(pyglet.window.Window):
 
 	def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
 		self.on_mouse_motion(x, y, dx, dy)
-	#	self.moving = True
-	#	if self.active[1] and self.multiselect == False:
-	#		if not hasattr(self.active[1], 'physics'):
-	#			self.active[1].drag(dx, dy)
-	#	elif self.multiselect:
-	#		for obj in self.multiselect:
-	#			self.sprites[obj].move(dx, dy)
 
 	def on_key_release(self, symbol, modifiers):
 		if symbol == key.LCTRL:
