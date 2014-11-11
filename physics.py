@@ -16,7 +16,7 @@ class physics():
 	def apply_friction(self, vector):
 		"""Slows down a node's velocity-vector due to friction."""
 
-		friction_vector = self.scale_vector(vector, friction_scale)
+		friction_vector = self.scale_vector(vector, self.friction_scale)
 		return self.add_vectors(vector, friction_vector)
 
 	def pythagoras(self, node1, node2):
@@ -134,6 +134,6 @@ class physics():
 			# TODO: Perform this comparison directly on sum_vector
 			#	possibly before friction has been applied.
 			old_velocity = neighbor.velocity
-			self.velocity = self.accelerate(velocities[neighbor.UID], sum_vector)
+			self.velocity = self.accelerate(self.velocities[neighbor.UID], sum_vector)
 
 			# TODO: Don't go below min_speed
