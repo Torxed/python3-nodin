@@ -2,6 +2,7 @@
 import pyglet, pickle
 from pyglet.gl import *
 from threading import *
+from os import name
 from os.path import isfile, abspath
 from collections import OrderedDict as OD
 from time import time
@@ -18,7 +19,10 @@ glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE)
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 ## Pyglet configs:
-uiconfig = pyglet.gl.Config(sample_buffers=1, samples=32)
+if name == 'nt':
+	uiconfig = pyglet.gl.Config()
+else:
+	uiconfig = pyglet.gl.Config(sample_buffers=1, samples=32)
 pyglet.options['audio'] = ('alsa', 'openal', 'silent')
 key = pyglet.window.key
 
@@ -483,7 +487,7 @@ class main(pyglet.window.Window):
 			if self.active[1] and self.multiselect == False:
 				self.active[1].click(x, y, self.mergeMap)
 			else:
-				self.active[1].dictWars['nodeObj'].update_children()
+				pass#self.active[1].dictWars['nodeObj'].update_children()
 		elif button == 4:
 			if not self.active[0]:
 				pass #Do something on empty spaces?
