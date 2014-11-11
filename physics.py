@@ -134,6 +134,8 @@ class physics():
 			# TODO: Perform this comparison directly on sum_vector
 			#	possibly before friction has been applied.
 			old_velocity = neighbor.velocity
+			if not neighbor.UID in self.velocities:
+				self.velocities[neighbor.UID] = (0,0)
 			self.velocity = self.accelerate(self.velocities[neighbor.UID], sum_vector)
 
 			# TODO: Don't go below min_speed
