@@ -6,8 +6,8 @@ class physics():
 		self.min_speed = 0.1				# Minimum speed before stopping the node
 		self.friction_scale = -0.01			# Reduces acceleration with 1% per update
 
-		self.link_attraction_scale = 1		# How much a link attracts a node
-		self.node_repulsion_scale = 1		# How much nodes attract each other
+		self.link_attraction_scale = 0		# How much a link attracts a node
+		self.node_repulsion_scale = 0		# How much nodes attract each other
 
 		self.acceleration_scale = (1, 1)	# Should be defined according to width-height ratio
 
